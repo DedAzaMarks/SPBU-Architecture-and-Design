@@ -24,3 +24,6 @@
 
 # Ссылка на гугл док с решением
 https://docs.google.com/document/d/1UXTUbpHfLhNIqYzQq8N0F6ba0GpAgeGG2fByj9eWxhY/edit?usp=sharing
+
+# ССылка на Miro
+https://miro.com/welcomeonboard/WVJmV1FrOGRTOWE1UEJQZWZFY1g3VHhwdEhaOEdpUUp0eEhSQjZQZnQ2Z0FKaFRWRjQwbkx3c1YyamJ2dHZ5UXwzNDU4NzY0NTIxODE2MzE3NTkxfDI=?share_link_id=773016580808
