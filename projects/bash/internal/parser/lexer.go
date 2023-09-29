@@ -43,7 +43,7 @@ func Lex(s string) ([]token, error) {
 		case '$':
 			res = append(res, token{val: s[i : i+1], typ: dollarSign})
 		default:
-			for ; unicode.IsSpace(rune(s[i])); i++ {
+			for ; !unicode.IsSpace(rune(s[i])); i++ {
 			}
 			res = append(res, token{val: s[:i], typ: word})
 		}
