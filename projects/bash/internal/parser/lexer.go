@@ -11,6 +11,7 @@ const (
 	singleQuotedString = -2
 	doubleQuotedString = -3
 	dollarSign         = -4
+	space              = -4
 )
 
 type token struct {
@@ -42,6 +43,8 @@ func Lex(s string) ([]token, error) {
 			})
 		case '$':
 			res = append(res, token{val: s[i : i+1], typ: dollarSign})
+		case ' ':
+			res = append(res, token{val: s[i : i+1], typ: space})
 		default:
 			for ; !unicode.IsSpace(rune(s[i])); i++ {
 			}
