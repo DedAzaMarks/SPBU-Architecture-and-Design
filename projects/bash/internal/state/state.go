@@ -18,6 +18,10 @@ func (s *State) CheckCommand(cmd string) bool {
 	return ok
 }
 
+func (s *State) GetState() State {
+	return *s
+}
+
 func NewState() *State {
 	return &State{
 		availableCommands: map[string]struct{}{
