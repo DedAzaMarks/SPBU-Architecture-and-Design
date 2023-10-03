@@ -3,7 +3,6 @@ package parser
 import (
 	"errors"
 	"strings"
-	"unicode"
 )
 
 const (
@@ -44,9 +43,9 @@ func Lex(s string) ([]token, error) {
 		case '$':
 			res = append(res, token{val: s[i : i+1], typ: dollarSign})
 		case ' ':
-			res = append(res, token{val: s[i : i+1], typ: space})
+			continue
 		default:
-			for ; !unicode.IsSpace(rune(s[i])); i++ {
+			for ; s[i] == ' '; i++ {
 			}
 			res = append(res, token{val: s[:i], typ: word})
 		}
