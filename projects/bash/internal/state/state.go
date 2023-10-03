@@ -1,6 +1,11 @@
 package state
 
-import "os"
+import (
+	"fmt"
+	"os"
+
+	"github.com/DedAzaMarks/SPBU-Architecture-and-Design/projects/bash/internal/parser"
+)
 
 type State struct {
 	availableCommands map[string]struct{}
@@ -16,6 +21,45 @@ type State struct {
 func (s *State) CheckCommand(cmd string) bool {
 	_, ok := s.availableCommands[cmd]
 	return ok
+}
+
+func (s *State) EvaluateCommands(commands []parser.Command) error {
+	for _, command := range commands {
+		cmd, err := s.SubstituteVariables(command)
+		if err != nil {
+			return fmt.Errorf("variable substitution error: %w", err)
+		}
+		if _, ok := s.availableCommands[cmd.Command]; !ok {
+
+		}
+	}
+	return nil
+}
+
+func (s *State) SubstituteVariables(command parser.Command) (parser.Command, error) {
+	newCommand := s.SubstituteVariable(command.Command)
+	newArguments := make([]string, 0, len(command.Arguments))
+	for _, arg := range command.Arguments {
+		newArguments = append(newArguments, s.SubstituteVariable(arg))
+	}
+	return parser.Command{Command: newCommand, Arguments: newArguments}, nil
+}
+
+func (s *State) SubstituteVariable(word string) string {
+	var newWord []byte
+	for i := 0; i < len(word); i++ {
+		if word[i] == '$' {
+			var varName []byte
+			for ; i < len(word) && word[i] != '$'; i++ {
+				varName = append(varName, word[i])
+			}
+			gVar := s.GlobalVariables[string(varName)]
+			newWord = append(newWord, gVar...)
+		} else {
+			newWord = append(newWord, word[i])
+		}
+	}
+	return string(newWord)
 }
 
 func NewState() *State {

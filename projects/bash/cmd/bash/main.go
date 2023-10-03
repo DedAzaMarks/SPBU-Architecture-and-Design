@@ -18,11 +18,13 @@ func main() {
 	fmt.Print("> ")
 	for scanner.Scan() {
 		cmd := scanner.Text()
-		command, err := parser.ParseCommandLine(cmd)
+		commands, err := parser.ParseCommandLine(cmd)
 		if err != nil {
-			log.Printf("error : %v", err)
+			log.Printf("parsing error: %v", err)
 		}
-		_ = command
+		if err := s.EvaluateCommands(commands); err != nil {
+			log.Printf("error: %v", err)
+		}
 		fmt.Print("> ")
 	}
 }

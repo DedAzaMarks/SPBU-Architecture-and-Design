@@ -1,20 +1,20 @@
 package parser
 
 import (
-	"fmt"
+	"strings"
 )
 
 type Command struct {
-	Command  string
-	Argument string
+	Command   string
+	Arguments []string
 }
 
 func ParseCommandLine(s string) ([]Command, error) {
 	var res []Command
-	tokens, err := Lex(s)
-	if err != nil {
-		return nil, fmt.Errorf("lexer error: %w", err)
+	chunks := strings.Split(s, "|") // todo - cmd || cmd будет страдать, се ля ви, потом переделаем
+	for _, chunk := range chunks {
+		cmdArgs := strings.Split(strings.TrimSpace(chunk), " ")
+		res = append(res, Command{Command: cmdArgs[0], Arguments: cmdArgs[1:]})
 	}
-	_ = tokens
 	return res, nil
 }
