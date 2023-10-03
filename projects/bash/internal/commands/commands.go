@@ -3,11 +3,12 @@ package commands
 import (
 	"bufio"
 	"fmt"
-	"github.com/DedAzaMarks/SPBU-Architecture-and-Design/projects/bash/internal/state"
 	"io"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/DedAzaMarks/SPBU-Architecture-and-Design/projects/bash/internal/state"
 )
 
 func Cat(s *state.State, filename string) (string, error) {

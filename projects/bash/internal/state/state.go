@@ -25,27 +25,25 @@ func (s *State) CheckCommand(cmd string) bool {
 
 func (s *State) EvaluateCommands(commands []parser.Command) error {
 	for _, command := range commands {
-		cmd, err := s.SubstituteVariables(command)
+		cmd, err := s.substituteVariables(command)
 		if err != nil {
 			return fmt.Errorf("variable substitution error: %w", err)
 		}
-		if _, ok := s.availableCommands[cmd.Command]; !ok {
-
-		}
+		_ = cmd
 	}
 	return nil
 }
 
-func (s *State) SubstituteVariables(command parser.Command) (parser.Command, error) {
-	newCommand := s.SubstituteVariable(command.Command)
+func (s *State) substituteVariables(command parser.Command) (parser.Command, error) {
+	newCommand := s.substituteVariable(command.Command)
 	newArguments := make([]string, 0, len(command.Arguments))
 	for _, arg := range command.Arguments {
-		newArguments = append(newArguments, s.SubstituteVariable(arg))
+		newArguments = append(newArguments, s.substituteVariable(arg))
 	}
 	return parser.Command{Command: newCommand, Arguments: newArguments}, nil
 }
 
-func (s *State) SubstituteVariable(word string) string {
+func (s *State) substituteVariable(word string) string {
 	var newWord []byte
 	for i := 0; i < len(word); i++ {
 		if word[i] == '$' {
