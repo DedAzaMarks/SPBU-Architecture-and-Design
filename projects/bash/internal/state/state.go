@@ -3,6 +3,7 @@ package state
 import (
 	"fmt"
 	"os"
+	"os/exec"
 
 	"github.com/DedAzaMarks/SPBU-Architecture-and-Design/projects/bash/internal/parser"
 )
@@ -29,12 +30,22 @@ func (s *State) EvaluateCommands(commands []parser.Command) error {
 		if err != nil {
 			return fmt.Errorf("variable substitution error: %w", err)
 		}
-		output, err := s.availableCommands[cmd.Command](s, cmd.Arguments)
-		if err != nil {
-			return fmt.Errorf("evaluation error: %w", err)
+		if s.CheckCommand(cmd.Command) {
+			_, err := s.availableCommands[cmd.Command](s, cmd.Arguments)
+			if err != nil {
+				return fmt.Errorf("evaluation error: %w", err)
+			}
+			return nil
 		}
-		fmt.Println(output)
+		// todo - обработка переменных
+		output, err := exec.Command(cmd.Command, cmd.Arguments...).CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("exec error: %w", err)
+		}
+		s.PrevCommandOutput = string(output)
 	}
+	fmt.Println(s.PrevCommandOutput)
+	s.Reset()
 	return nil
 }
 
@@ -62,6 +73,11 @@ func (s *State) substituteVariable(word string) string {
 		}
 	}
 	return string(newWord)
+}
+
+func (s *State) Reset() {
+	s.PrevCommandOutput = s.PrevCommandOutput[:0]
+	s.CommandContent = s.CommandContent[:0]
 }
 
 func NewState() *State {
