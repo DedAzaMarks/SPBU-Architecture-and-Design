@@ -8,7 +8,7 @@ import (
 )
 
 type State struct {
-	availableCommands map[string]struct{}
+	availableCommands map[string]func(state *State, args []string) (string, error)
 
 	GlobalVariables map[string]string
 
@@ -29,7 +29,11 @@ func (s *State) EvaluateCommands(commands []parser.Command) error {
 		if err != nil {
 			return fmt.Errorf("variable substitution error: %w", err)
 		}
-		_ = cmd
+		output, err := s.availableCommands[cmd.Command](s, cmd.Arguments)
+		if err != nil {
+			return fmt.Errorf("evaluation error: %w", err)
+		}
+		fmt.Println(output)
 	}
 	return nil
 }
@@ -62,12 +66,15 @@ func (s *State) substituteVariable(word string) string {
 
 func NewState() *State {
 	return &State{
-		availableCommands: map[string]struct{}{
-			"cat":  {},
-			"echo": {},
-			"wc":   {},
-			"pwd":  {},
-			"exit": {},
+		availableCommands: map[string]func(state *State, strings []string) (string, error){
+			"cat":  Cat,
+			"echo": Echo,
+			"wc":   Wc,
+			"pwd":  Pwd,
+			"exit": func(state *State, strings []string) (string, error) {
+				os.Exit(state.PrevReturnCode)
+				return "", nil
+			},
 		},
 		GlobalVariables: map[string]string{
 			"HOME": os.Getenv("HOME"),

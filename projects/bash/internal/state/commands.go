@@ -1,18 +1,15 @@
-package commands
+package state
 
 import (
 	"bufio"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
-
-	"github.com/DedAzaMarks/SPBU-Architecture-and-Design/projects/bash/internal/state"
 )
 
-func Cat(s *state.State, filename string) (string, error) {
-	if filename == "" {
+func Cat(s *State, filenames []string) (string, error) {
+	if len(filenames) == 0 {
 		if s.PrevCommandOutput == "" {
 			return "", fmt.Errorf("Usage: cat [FILE]")
 		}
@@ -21,25 +18,29 @@ func Cat(s *state.State, filename string) (string, error) {
 		return content, nil
 	}
 
-	content, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return "", fmt.Errorf("File not found %s", filename)
+	var content string
+	for _, filename := range filenames {
+		buf, err := os.ReadFile(filename)
+		if err != nil {
+			return "", fmt.Errorf("File not found %s", filename)
+		}
+		content += string(buf)
 	}
 
-	s.PrevCommandOutput = string(content)
-	return string(content), nil
+	s.PrevCommandOutput = content
+	return content, nil
 }
 
-func Wc(s *state.State, filename string) (string, error) {
+func Wc(s *State, filename []string) (string, error) {
 	var input io.Reader
 
-	if filename == "" {
+	if len(filename) == 0 {
 		if s.PrevCommandOutput == "" {
 			return "", fmt.Errorf("Usage: wc [FILE]")
 		}
 		input = strings.NewReader(s.PrevCommandOutput)
 	} else {
-		file, err := os.Open(filename)
+		file, err := os.Open(filename[0])
 		if err != nil {
 			return "", fmt.Errorf("File not found %s", filename)
 		}
@@ -64,7 +65,10 @@ func wc(input io.Reader) (string, error) {
 	return fmt.Sprintf("Lines: %d, Words: %d, Bytes: %d", lineCount, wordCount, byteCount), nil
 }
 
-func Pwd(s *state.State) (string, error) {
+func Pwd(s *State, args []string) (string, error) {
+	if len(args) != 0 {
+		return "", fmt.Errorf("pwd: too many arguments")
+	}
 	dir, err := os.Getwd()
 	if err != nil {
 		return "", fmt.Errorf("Error getting current directory: %v", err)
@@ -73,7 +77,11 @@ func Pwd(s *state.State) (string, error) {
 	return dir, nil
 }
 
-func Echo(s *state.State, arg string) string {
-	s.PrevCommandOutput = arg
-	return arg
+func Echo(s *State, args []string) (string, error) {
+	var builder strings.Builder
+	for _, arg := range args {
+		builder.WriteString(arg)
+	}
+	s.PrevCommandOutput = builder.String()
+	return s.PrevCommandOutput, nil
 }

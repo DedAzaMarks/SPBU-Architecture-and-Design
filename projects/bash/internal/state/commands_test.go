@@ -1,7 +1,6 @@
-package commands
+package state
 
 import (
-	"github.com/DedAzaMarks/SPBU-Architecture-and-Design/projects/bash/internal/state"
 	"strings"
 	"testing"
 )
@@ -9,29 +8,29 @@ import (
 func TestCat(t *testing.T) {
 	tests := []struct {
 		name           string
-		state          *state.State
-		filename       string
+		state          *State
+		filename       []string
 		expectedOutput string
 		expectedError  string
 	}{
 		{
 			name:           "Read from file",
-			state:          &state.State{},
-			filename:       "test.txt", // Provide the actual file path if needed
+			state:          &State{},
+			filename:       []string{"test.txt"}, // Provide the actual file path if needed
 			expectedOutput: "Hello, World!",
 			expectedError:  "",
 		},
 		{
 			name:           "Read from previous command output",
-			state:          &state.State{PrevCommandOutput: "Previous Output"},
-			filename:       "",
+			state:          &State{PrevCommandOutput: "Previous Output"},
+			filename:       []string{""},
 			expectedOutput: "Previous Output",
 			expectedError:  "",
 		},
 		{
 			name:           "No input provided",
-			state:          &state.State{},
-			filename:       "",
+			state:          &State{},
+			filename:       []string{""},
 			expectedOutput: "",
 			expectedError:  "Usage: cat [FILE]",
 		},
@@ -56,29 +55,29 @@ func TestCat(t *testing.T) {
 func TestWc(t *testing.T) {
 	tests := []struct {
 		name           string
-		state          *state.State
-		filename       string
+		state          *State
+		filename       []string
 		expectedOutput string
 		expectedError  string
 	}{
 		{
 			name:           "Read from file",
-			state:          &state.State{},
-			filename:       "commands.go", // Provide the actual file path if needed
+			state:          &State{},
+			filename:       []string{"commands.go"}, // Provide the actual file path if needed
 			expectedOutput: "Lines: 2, Words: 4, Bytes: 24",
 			expectedError:  "",
 		},
 		{
 			name:           "Read from previous command output",
-			state:          &state.State{PrevCommandOutput: "Previous Output"},
-			filename:       "",
+			state:          &State{PrevCommandOutput: "Previous Output"},
+			filename:       []string{""},
 			expectedOutput: "Lines: 1, Words: 2, Bytes: 16",
 			expectedError:  "",
 		},
 		{
 			name:           "No input provided",
-			state:          &state.State{},
-			filename:       "",
+			state:          &State{},
+			filename:       []string{""},
 			expectedOutput: "",
 			expectedError:  "Usage: wc [FILE]",
 		},
