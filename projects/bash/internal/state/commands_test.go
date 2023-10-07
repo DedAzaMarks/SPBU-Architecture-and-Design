@@ -23,14 +23,14 @@ func TestCat(t *testing.T) {
 		{
 			name:           "Read from previous command output",
 			state:          &State{PrevCommandOutput: "Previous Output"},
-			filename:       []string{""},
+			filename:       nil,
 			expectedOutput: "Previous Output",
 			expectedError:  "",
 		},
 		{
 			name:           "No input provided",
 			state:          &State{},
-			filename:       []string{""},
+			filename:       nil,
 			expectedOutput: "",
 			expectedError:  "Usage: cat [FILE]",
 		},
@@ -63,21 +63,21 @@ func TestWc(t *testing.T) {
 		{
 			name:           "Read from file",
 			state:          &State{},
-			filename:       []string{"commands.go"}, // Provide the actual file path if needed
-			expectedOutput: "Lines: 2, Words: 4, Bytes: 24",
+			filename:       []string{"test.txt"}, // Provide the actual file path if needed
+			expectedOutput: "Lines: 1, Words: 2, Bytes: 14",
 			expectedError:  "",
 		},
 		{
 			name:           "Read from previous command output",
 			state:          &State{PrevCommandOutput: "Previous Output"},
-			filename:       []string{""},
+			filename:       nil,
 			expectedOutput: "Lines: 1, Words: 2, Bytes: 16",
 			expectedError:  "",
 		},
 		{
 			name:           "No input provided",
 			state:          &State{},
-			filename:       []string{""},
+			filename:       nil,
 			expectedOutput: "",
 			expectedError:  "Usage: wc [FILE]",
 		},
