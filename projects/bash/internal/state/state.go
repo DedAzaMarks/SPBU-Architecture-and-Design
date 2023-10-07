@@ -35,7 +35,7 @@ func (s *State) EvaluateCommands(commands []parser.Command) error {
 			if err != nil {
 				return fmt.Errorf("evaluation error: %w", err)
 			}
-			return nil
+			continue
 		}
 		// todo - обработка переменных
 		output, err := exec.Command(cmd.Command, cmd.Arguments...).CombinedOutput()
