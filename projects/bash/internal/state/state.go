@@ -8,22 +8,31 @@ import (
 	"github.com/DedAzaMarks/SPBU-Architecture-and-Design/projects/bash/internal/parser"
 )
 
+// State - holds information on current session variables and commands output
 type State struct {
 	availableCommands map[string]func(state *State, args []string) (string, error)
 
+	// GlobalVariables - holds key-value pairs. Key is a variable name, Value is a variable value
 	GlobalVariables map[string]string
 
+	// CommandContent - holds full command from stdin
 	CommandContent string
 
+	// PrevCommandOutput - holds output of the previous command in pipeline sequence.
+	// Should be cleaned with State.Reset method after all commands in pipeline are finished.
 	PrevCommandOutput string
-	PrevReturnCode    int
+
+	// PrevReturnCode - exit code of the previous command
+	PrevReturnCode int
 }
 
+// CheckCommand - is cmd present in default commands set
 func (s *State) CheckCommand(cmd string) bool {
 	_, ok := s.availableCommands[cmd]
 	return ok
 }
 
+// EvaluateCommands - evaluate sequence of commands
 func (s *State) EvaluateCommands(commands []parser.Command) error {
 	for _, command := range commands {
 		cmd, err := s.substituteVariables(command)
@@ -75,11 +84,13 @@ func (s *State) substituteVariable(word string) string {
 	return string(newWord)
 }
 
+// Reset - reset State's fields for next command input
 func (s *State) Reset() {
 	s.PrevCommandOutput = s.PrevCommandOutput[:0]
 	s.CommandContent = s.CommandContent[:0]
 }
 
+// NewState - creates new state, which holds default commands and some basic environment variables
 func NewState() *State {
 	return &State{
 		availableCommands: map[string]func(state *State, strings []string) (string, error){

@@ -22,5 +22,9 @@
 - [`goimports`](https://pkg.go.dev/golang.org/x/tools/cmd/goimports)
 - [`staticcheck`](https://staticcheck.io/)
 
+## Сборка
+- bash
+  запустить из корня репозитория `go build ./projects/bash/cmd/bash`
+
 # Ссылка на гугл док с решением
 https://docs.google.com/document/d/1UXTUbpHfLhNIqYzQq8N0F6ba0GpAgeGG2fByj9eWxhY/edit?usp=sharing
