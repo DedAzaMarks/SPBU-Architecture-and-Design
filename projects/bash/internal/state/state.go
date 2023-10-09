@@ -87,6 +87,7 @@ func NewState() *State {
 			"echo": Echo,
 			"wc":   Wc,
 			"pwd":  Pwd,
+			"grep": Grep,
 			"exit": func(state *State, strings []string) (string, error) {
 				os.Exit(state.PrevReturnCode)
 				return "", nil
