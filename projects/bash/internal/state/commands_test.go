@@ -23,14 +23,14 @@ func TestCat(t *testing.T) {
 		{
 			name:           "Read from previous command output",
 			state:          &State{PrevCommandOutput: "Previous Output"},
-			filename:       []string{""},
+			filename:       nil,
 			expectedOutput: "Previous Output",
 			expectedError:  "",
 		},
 		{
 			name:           "No input provided",
 			state:          &State{},
-			filename:       []string{""},
+			filename:       nil,
 			expectedOutput: "",
 			expectedError:  "Usage: cat [FILE]",
 		},
@@ -63,21 +63,21 @@ func TestWc(t *testing.T) {
 		{
 			name:           "Read from file",
 			state:          &State{},
-			filename:       []string{"commands.go"}, // Provide the actual file path if needed
-			expectedOutput: "Lines: 2, Words: 4, Bytes: 24",
+			filename:       []string{"test.txt"}, // Provide the actual file path if needed
+			expectedOutput: "Lines: 1, Words: 2, Bytes: 14",
 			expectedError:  "",
 		},
 		{
 			name:           "Read from previous command output",
 			state:          &State{PrevCommandOutput: "Previous Output"},
-			filename:       []string{""},
+			filename:       nil,
 			expectedOutput: "Lines: 1, Words: 2, Bytes: 16",
 			expectedError:  "",
 		},
 		{
 			name:           "No input provided",
 			state:          &State{},
-			filename:       []string{""},
+			filename:       nil,
 			expectedOutput: "",
 			expectedError:  "Usage: wc [FILE]",
 		},
@@ -131,6 +131,71 @@ func Test_wc(t *testing.T) {
 
 			if output != tt.expectedOutput {
 				t.Errorf("wc() output = %v, expected output = %v", output, tt.expectedOutput)
+			}
+		})
+	}
+}
+func TestGrep(t *testing.T) {
+	// Create a test State instance
+	s := &State{}
+
+	// Create a test input string
+	input := `This is a test line 1.
+This is a test line 2.
+This is a test line 3.
+Pattern on line 4.
+This is a test line 5.`
+
+	// Set the PrevCommandOutput of the State to the test input
+	s.PrevCommandOutput = input
+
+	// Define the test cases
+	testCases := []struct {
+		name           string
+		args           []string
+		expectedOutput string
+	}{
+		{
+			name:           "Match entire line (case-insensitive)",
+			args:           []string{"-i", "pattern"},
+			expectedOutput: "Pattern on line 4.",
+		},
+		{
+			name:           "Match entire line (case-sensitive)",
+			args:           []string{"pattern"},
+			expectedOutput: "Pattern on line 4.",
+		},
+		{
+			name:           "Match whole word (case-insensitive)",
+			args:           []string{"-i", "-w", "is"},
+			expectedOutput: "This is a test line 1.",
+		},
+		{
+			name:           "Match whole word (case-sensitive)",
+			args:           []string{"-w", "is"},
+			expectedOutput: "", // No match because it's case-sensitive
+		},
+		{
+			name:           "Match with lines after (case-insensitive)",
+			args:           []string{"-i", "-A", "2", "test"},
+			expectedOutput: "This is a test line 1.\nThis is a test line 2.\nThis is a test line 3.",
+		},
+		{
+			name:           "Match with lines after (case-sensitive)",
+			args:           []string{"-A", "2", "Test"},
+			expectedOutput: "This is a test line 1.\nThis is a test line 2.",
+		},
+	}
+
+	// Run the test cases
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			output, err := Grep(s, tc.args)
+			if err != nil {
+				t.Errorf("Grep returned an error: %v", err)
+			}
+			if output != tc.expectedOutput {
+				t.Errorf("Expected output: %s, but got: %s", tc.expectedOutput, output)
 			}
 		})
 	}

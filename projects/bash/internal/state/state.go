@@ -44,7 +44,7 @@ func (s *State) EvaluateCommands(commands []parser.Command) error {
 			if err != nil {
 				return fmt.Errorf("evaluation error: %w", err)
 			}
-			return nil
+			continue
 		}
 		// todo - обработка переменных
 		output, err := exec.Command(cmd.Command, cmd.Arguments...).CombinedOutput()
@@ -98,6 +98,7 @@ func NewState() *State {
 			"echo": Echo,
 			"wc":   Wc,
 			"pwd":  Pwd,
+			"grep": Grep,
 			"exit": func(state *State, strings []string) (string, error) {
 				os.Exit(state.PrevReturnCode)
 				return "", nil
