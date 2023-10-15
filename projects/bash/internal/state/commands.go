@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"regexp"
 	"strings"
 )
 
@@ -160,42 +159,38 @@ func grep(s *State, inputReader *os.File, caseInsensitive, wholeWord bool, patte
 	scanner := bufio.NewScanner(inputReader)
 	var buffer []string
 	matching := false // Flag to track if a match occurred
+	pattern = strings.Replace(pattern, "'", "", -1)
+	pattern = strings.Replace(pattern, "\"", "", -1)
+	if caseInsensitive {
+		pattern = strings.ToLower(pattern)
+	}
 
 	for scanner.Scan() {
 		line := scanner.Text()
 		if caseInsensitive {
 			line = strings.ToLower(line)
-			pattern = strings.ToLower(pattern)
 		}
 
+		matched := false
 		if wholeWord {
-			re := regexp.MustCompile(`\b` + regexp.QuoteMeta(pattern) + `\b`)
-			if re.MatchString(line) {
-				matching = true
-				if len(buffer) > 0 {
-					result = append(result, buffer...)
-					buffer = nil
-				}
-				result = append(result, line)
-			} else if matching && linesAfter > 0 {
-				buffer = append(buffer, line)
-				if len(buffer) > linesAfter {
-					buffer = buffer[1:]
-				}
-			}
+			// Check for word boundaries before and after the pattern
+			matched = DoesConsistWholeWord(line, pattern)
 		} else {
-			if strings.Contains(line, pattern) {
-				matching = true
-				if len(buffer) > 0 {
-					result = append(result, buffer...)
-					buffer = nil
-				}
-				result = append(result, line)
-			} else if matching && linesAfter > 0 {
-				buffer = append(buffer, line)
-				if len(buffer) > linesAfter {
-					buffer = buffer[1:]
-				}
+			matched = strings.Contains(line, pattern)
+		}
+
+		if matched {
+
+			matching = true
+			if len(buffer) > 0 {
+				result = append(result, buffer...)
+				buffer = nil
+			}
+			result = append(result, line)
+		} else if matching && linesAfter > 0 {
+			buffer = append(buffer, line)
+			if len(buffer) > linesAfter {
+				buffer = buffer[1:]
 			}
 		}
 	}
@@ -212,6 +207,16 @@ func grep(s *State, inputReader *os.File, caseInsensitive, wholeWord bool, patte
 	return s.PrevCommandOutput, nil
 }
 
+func DoesConsistWholeWord(source, check string) bool {
+
+	words := make(map[string]struct{})
+	for _, w := range strings.Fields(strings.ToLower(source)) {
+		words[w] = struct{}{}
+	}
+
+	_, ok := words[check]
+	return ok
+}
 func parseInt(s string) int {
 	i := 0
 	for _, ch := range s {
