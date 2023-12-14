@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -129,7 +128,7 @@ func Grep(s *State, args []string) (string, error) {
 		}
 		defer inputReader.Close()
 	} else {
-		tempFile, err := ioutil.TempFile("", "tempfile.txt")
+		tempFile, err := os.CreateTemp("", "tempfile.txt")
 		if err != nil {
 			fmt.Println("Error creating temporary file:", err)
 			return "", err
