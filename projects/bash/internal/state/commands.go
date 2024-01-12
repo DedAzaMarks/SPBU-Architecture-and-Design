@@ -201,10 +201,3 @@ func DoesConsistWholeWord(source, check string) bool {
 	_, ok := words[check]
 	return ok
 }
-func parseInt(s string) int {
-	i := 0
-	for _, ch := range s {
-		i = i*10 + int(ch-'0')
-	}
-	return i
-}
