@@ -147,13 +147,17 @@ func grep(s *State, inputReader *os.File, caseInsensitive, wholeWord bool, patte
 		pattern = strings.ToLower(pattern)
 	}
 
+	matched := false
+
+	linesAfterCounter := 0
+
 	for scanner.Scan() {
-		line := scanner.Text()
+		line_ := scanner.Text()
+		line := line_
 		if caseInsensitive {
 			line = strings.ToLower(line)
 		}
 
-		matched := false
 		if wholeWord {
 			// Check for word boundaries before and after the pattern
 			matched = DoesConsistWholeWord(line, pattern)
@@ -162,18 +166,16 @@ func grep(s *State, inputReader *os.File, caseInsensitive, wholeWord bool, patte
 		}
 
 		if matched {
-
 			matching = true
+			linesAfterCounter = 0
 			if len(buffer) > 0 {
 				result = append(result, buffer...)
 				buffer = nil
 			}
-			result = append(result, line)
-		} else if matching && linesAfter > 0 {
-			buffer = append(buffer, line)
-			if len(buffer) > linesAfter {
-				buffer = buffer[1:]
-			}
+			result = append(result, line_)
+		} else if matching && linesAfter > linesAfterCounter {
+			buffer = append(buffer, line_)
+			linesAfterCounter++
 		}
 	}
 
