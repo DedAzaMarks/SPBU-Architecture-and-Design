@@ -2,6 +2,7 @@ package state
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -14,7 +15,6 @@ func Cat(s *State, filenames []string) (string, error) {
 			return "", fmt.Errorf("Usage: cat [FILE]")
 		}
 		content := s.PrevCommandOutput
-		s.PrevCommandOutput = ""
 		return content, nil
 	}
 
@@ -84,4 +84,120 @@ func Echo(s *State, args []string) (string, error) {
 	}
 	s.PrevCommandOutput = builder.String()
 	return s.PrevCommandOutput, nil
+}
+
+func Grep(s *State, args []string) (string, error) {
+	grepFlags := flag.NewFlagSet("grep", flag.ExitOnError)
+	var caseInsensitive, wholeWord bool
+	var linesAfter int
+	grepFlags.BoolVar(&caseInsensitive, "i", false, "case sensitivity")
+	grepFlags.BoolVar(&wholeWord, "w", false, "whole word")
+	grepFlags.IntVar(&linesAfter, "A", 0, "lines after match")
+	if err := grepFlags.Parse(args); err != nil {
+		return "", err
+	}
+
+	if len(grepFlags.Args()) < 1 {
+		return "", fmt.Errorf("Usage: grep [-i] [-w] [-A num] pattern [file]")
+	}
+	pattern := grepFlags.Arg(0)
+	var inputReader *os.File
+	if len(grepFlags.Args()) >= 2 {
+		filename := grepFlags.Arg(1)
+		var err error
+		inputReader, err = os.Open(filename)
+		if err != nil {
+			return "", err
+		}
+		defer inputReader.Close()
+	} else {
+		tempFile, err := os.CreateTemp("", "tempfile.txt")
+		if err != nil {
+			fmt.Println("Error creating temporary file:", err)
+			return "", err
+		}
+		defer tempFile.Close()
+
+		// Write the string content to the temporary file
+		_, err = tempFile.WriteString(s.PrevCommandOutput)
+		if err != nil {
+			fmt.Println("Error writing to temporary file:", err)
+			return "", err
+		}
+		inputReader, err = os.Open(tempFile.Name())
+		if err != nil {
+			return "", err
+		}
+	}
+	res, err := grep(s, inputReader, caseInsensitive, wholeWord, pattern, linesAfter)
+	if err != nil {
+		return "", err
+	}
+	return res, nil
+}
+
+func grep(s *State, inputReader *os.File, caseInsensitive, wholeWord bool, pattern string, linesAfter int) (string, error) {
+	var result []string
+	scanner := bufio.NewScanner(inputReader)
+	var buffer []string
+	matching := false // Flag to track if a match occurred
+	pattern = strings.Replace(pattern, "'", "", -1)
+	pattern = strings.Replace(pattern, "\"", "", -1)
+	if caseInsensitive {
+		pattern = strings.ToLower(pattern)
+	}
+
+	matched := false
+
+	linesAfterCounter := 0
+
+	for scanner.Scan() {
+		line_ := scanner.Text()
+		line := line_
+		if caseInsensitive {
+			line = strings.ToLower(line)
+		}
+
+		if wholeWord {
+			// Check for word boundaries before and after the pattern
+			matched = DoesConsistWholeWord(line, pattern)
+		} else {
+			matched = strings.Contains(line, pattern)
+		}
+
+		if matched {
+			matching = true
+			linesAfterCounter = 0
+			if len(buffer) > 0 {
+				result = append(result, buffer...)
+				buffer = nil
+			}
+			result = append(result, line_)
+		} else if matching && linesAfter > linesAfterCounter {
+			buffer = append(buffer, line_)
+			linesAfterCounter++
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+
+	if matching {
+		result = append(result, buffer...)
+	}
+
+	s.PrevCommandOutput = strings.Join(result, "\n")
+	return s.PrevCommandOutput, nil
+}
+
+func DoesConsistWholeWord(source, check string) bool {
+
+	words := make(map[string]struct{})
+	for _, w := range strings.Fields(strings.ToLower(source)) {
+		words[w] = struct{}{}
+	}
+
+	_, ok := words[check]
+	return ok
 }

@@ -13,7 +13,6 @@ import (
 func main() {
 	// todo - делать что то с глобальным стейтом. он как минимум понадобится на моменте исполнения
 	s := state.NewState()
-	_ = s
 	scanner := bufio.NewScanner(os.Stdin)
 	fmt.Print("> ")
 	for scanner.Scan() {

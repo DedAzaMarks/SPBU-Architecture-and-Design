@@ -135,3 +135,71 @@ func Test_wc(t *testing.T) {
 		})
 	}
 }
+func TestGrep(t *testing.T) {
+	// Create a test State instance
+	s := &State{}
+
+	// Create a test input string
+	input := `This is a Test line 1.
+This is a test line 2.
+This is a test line 3.
+Pattern on line 4.
+This is a test line 5.`
+
+	// Define the test cases
+	testCases := []struct {
+		name           string
+		args           []string
+		expectedOutput string
+	}{
+		{
+			name:           "Match entire line (case-insensitive)",
+			args:           []string{"-i", "pattern"},
+			expectedOutput: "Pattern on line 4.",
+		},
+		{
+			name:           "Match entire line (case-sensitive)",
+			args:           []string{"Pattern"},
+			expectedOutput: "Pattern on line 4.",
+		},
+		{
+			name:           "Match whole word (case-insensitive)",
+			args:           []string{"-i", "-w", "is"},
+			expectedOutput: "This is a Test line 1.\nThis is a test line 2.\nThis is a test line 3.\nThis is a test line 5.",
+		},
+		{
+			name:           "Match whole word (case-sensitive)",
+			args:           []string{"-w", "is"},
+			expectedOutput: "This is a Test line 1.\nThis is a test line 2.\nThis is a test line 3.\nThis is a test line 5.", // No match because it's case-sensitive
+		},
+		{
+			name:           "Match with lines after (case-insensitive)",
+			args:           []string{"-i", "-A", "2", "test"},
+			expectedOutput: "This is a Test line 1.\nThis is a test line 2.\nThis is a test line 3.\nPattern on line 4.\nThis is a test line 5.",
+		},
+		{
+			name:           "Match with lines after (case-sensitive)",
+			args:           []string{"-A", "2", "Test"},
+			expectedOutput: "This is a Test line 1.\nThis is a test line 2.\nThis is a test line 3.",
+		},
+	}
+
+	// Run the test cases
+	for i, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if i == 2 {
+				print()
+			}
+			// Set the PrevCommandOutput of the State to the test input
+			s.PrevCommandOutput = input
+
+			output, err := Grep(s, tc.args)
+			if err != nil {
+				t.Errorf("Grep returned an error: %v", err)
+			}
+			if output != tc.expectedOutput {
+				t.Errorf("Expected output: %s, but got: %s", tc.expectedOutput, output)
+			}
+		})
+	}
+}
