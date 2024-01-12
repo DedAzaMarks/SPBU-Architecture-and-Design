@@ -2,6 +2,7 @@ package state
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -86,41 +87,23 @@ func Echo(s *State, args []string) (string, error) {
 }
 
 func Grep(s *State, args []string) (string, error) {
+	grepFlags := flag.NewFlagSet("grep", flag.ExitOnError)
 	var caseInsensitive, wholeWord bool
 	var linesAfter int
-	var pattern, filename string
-
-	// Parse command line arguments
-	for i := 0; i < len(args); i++ {
-		arg := args[i]
-		switch arg {
-		case "-i":
-			caseInsensitive = true
-		case "-w":
-			wholeWord = true
-		case "-A":
-			if i+1 < len(args) {
-				linesAfter = parseInt(args[i+1])
-				i++
-			}
-		default:
-			if pattern == "" {
-				if (strings.HasPrefix(arg, `'`) && strings.HasSuffix(arg, `'`)) || (strings.HasPrefix(arg, `"`) && strings.HasSuffix(arg, `"`)) {
-					arg = arg[1 : len(arg)-1]
-				}
-				pattern = arg
-			} else {
-				filename = arg
-			}
-		}
+	grepFlags.BoolVar(&caseInsensitive, "i", false, "case sensitivity")
+	grepFlags.BoolVar(&wholeWord, "w", false, "whole word")
+	grepFlags.IntVar(&linesAfter, "A", 0, "lines after match")
+	if err := grepFlags.Parse(args); err != nil {
+		return "", err
 	}
 
-	if pattern == "" {
+	if len(grepFlags.Args()) < 1 {
 		return "", fmt.Errorf("Usage: grep [-i] [-w] [-A num] pattern [file]")
 	}
-
+	pattern := grepFlags.Arg(0)
 	var inputReader *os.File
-	if filename != "" {
+	if len(grepFlags.Args()) >= 2 {
+		filename := grepFlags.Arg(1)
 		var err error
 		inputReader, err = os.Open(filename)
 		if err != nil {
